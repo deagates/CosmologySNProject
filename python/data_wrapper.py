@@ -13,10 +13,11 @@ H0 = 100 * h #km/s/Mpc
 
 
 def inverseHubble(z,lm):
-    # Calculates reduced hubble 
+    # Calculates reduced hubble assuming lambda CDM
+    # lm is omega_matter
     return np.sqrt(lm*np.power((1+z),3)+(1-lm))
 
-def dLumi(zhel, zcmb, lm):
+def dLumi(zhel, zcmb, lm, func):
     # takes heliocentric redshift + CMB frame redshift values
     # and then outputs a luminosity distance!
     # arxiv 1601.01451 for reference, eq 2,3
@@ -24,13 +25,13 @@ def dLumi(zhel, zcmb, lm):
     return distance
 
 def import_data(inputfile):
-    # blah blah
     datafile = open(inputfile, 'r')
     numLines = 0
     
     # returned lists
     mb_list = []
-    dL = []
+    zcmb_list = []
+    zhel_list = []
     c = []
     x1_list = []
 
@@ -50,11 +51,17 @@ def import_data(inputfile):
         color = float(dataline[8])
         dcolor = float(dataline[9])
 
-        dL = dLumi(zcmb,zhel)
+#        dL = dLumi(zcmb,zhel)
+
+# calculating dL requires a guess for omega_m, so I can't do it here, should be called in mcmc,
+# but you can try using dLumi, inverseHubble
+
         # append lists
         mb_list.append(mb)
-        dL.append(dlumi)
+        zcmb_list.append(zcmb)
+        zhel_list.append(zhel)
         x1_list.append(x1)
         c.append(color)
     # returns list
-    return mb_list, dL, c, x1_list
+    return mb_list, zcmb, zhel, c, x1_list
+
