@@ -17,6 +17,17 @@ def inverseHubble(z,lm):
     # lm is omega_matter
     return np.sqrt(lm*np.power((1+z),3)+(1-lm))
 
+def abs_mag(hostmass):
+    # returns true or false given hostmass
+    # arXiv:1401.4064v2 proposed step function for handling differences
+    # for various host galaxies
+    # useless function but this is just to remind me
+    # to put this in the calculation for mu
+    if (hostmass < 10.):
+        return true
+    else:
+        return false
+
 def dLumi(zhel, zcmb, lm, func):
     # takes heliocentric redshift + CMB frame redshift values
     # and then outputs a luminosity distance!
@@ -50,6 +61,8 @@ def import_data(inputfile):
         dx1 = float(dataline[7])
         color = float(dataline[8])
         dcolor = float(dataline[9])
+        hostmass = float(dataline[10])
+        dhostmass = float(dataline[11])
 
 #        dL = dLumi(zcmb,zhel)
 

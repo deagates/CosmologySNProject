@@ -1,5 +1,7 @@
 \documentclass[aps,prl,reprint]{revtex4-1}
 \usepackage{blindtext}
+\usepackage{ mathrsfs }
+\usepackage{amsmath}
 %\usepackage[justification=centering]{caption}
 \usepackage{graphics,setspace,enumitem,graphicx,textpos}
 \begin{document}
@@ -16,7 +18,14 @@ Something about cosmology abstract TBA
 \end{abstract}
 \maketitle
 \section{I. Introduction}
-Hello darkness my old friend
+One compelling question in cosmology research today is why the energy budget of the universe is dominated by dark energy, or a cosmological constant. Since the observation of Type Ia supernovae showed that the universe was expanding at an accelerated rate, dark energy research has been an active area of study \cite{riess_sn}. Recently, a study by J.T. Nielson et al. \cite{shocker} claimed, analyzing a larger set of supernovae data, that there was little evidence for an accelerated rate of expansion. We reanalyze the same data set and present our findings here.
+\section{II. Background}
+To compare results, we use data from the Joint Lightcurve Analysis (JLA) catalogue \cite{sdss}, which uses the Spectral Adaptive Lightcurve Template 2 (SALT2) approach to characterize Type Ia Supernovae \cite{salt2}. There are several versions of the covariance matrix for the distance modulus; we use the covmat\_v6 version along with the corresponding code to convert the covariance data from FITS format \cite{fits} to a matrix format given $\alpha$, $\beta$ (see later $\mu$ equation), which was provided at http://supernovae.in2p3.fr/sdss\_snls\_jla/ReadMe.html. 
+\par The data provides us with several characteristic values for every SN Ia: the heliocentric redshift $z_{hel}$, the CMB frame redshift $z_{CMB}$, the apparent magnitude $m_B$, the shape parameter from SALT2, $x_1$, the color correction $c$, and the host stellar mass $M_{stellar}$ \cite{sdss}. Using these parameters, we can define a distant modulus which can be compared to a value expected by a certain cosmological model. This is given by \cite{sdss}: $$\mu = m_B - M + \alpha x_1 - \beta c.$$ The M, or absolute magnitude, is dependent on the host galaxy, so we follow the prescription in \cite{sdss}, where if $M_{stellar} < 10^{10} M_{\odot}$, then $M_B = M_B'$, otherwise, $M_B = M_B' + \Delta_M$. 
+\section{III. Analysis}
+We perform a likelihood analysis using MCMC methods. Our code can be found online at https://github.com/deagates/CosmologySNProject.
+\par We will use two different likelihood functions: the first one, which we will call approach (a), is $\chi^2 = (\hat{\mu}-\mu_{model})^\dagger C^{-1} (\hat{\mu}-\mu_{model})$ \cite{sdss}, where C is the covariance matrix. The other approach (b), which is employed by J.T. Nielson et al., uses \begin{align*}\mathscr{L} = |2\pi(C+A^T \Sigma_l A)|^{-1/2}\; \\
+\times \text{Exp}[-(\hat{Z}-Y_0A)(C+A^T\Sigma_lA)^{-1}(\hat{Z}-Y_0A)^T/2],\end{align*} where $\Sigma_l = diag[\sigma_{M0}^2,\sigma_{X_{1,0}}^2,\sigma_{C_0}^2,...],$ $A = ,$ $\hat{Z} = [\hat{m}_{B1}-\mu_1, \hat{x}_{11},\hat{c}_1,..]$, and $Y_0 = [M_0,x_{1,0},c_0,....]$. 
 \bibliographystyle{apsrev4-1} % Tell bibtex which bibliography style to use
-\bibliography{progress_report} 
+\bibliography{cosmo_bib} 
 \end{document}
