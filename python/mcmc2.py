@@ -83,8 +83,8 @@ def mu_error:
 
 def likelihood_draw(z_data,m_B_data,x1_data,c_data)
 om,ol,ok=omega_draw();
-mu=mu_model(z_data,om,ok,ol);
-mu_hat=mu_data(m_B_data,x1_data,c_data)
+mu=mu_model_calc(z_data,om,ok,ol);
+mu_hat=mu_data_calc(m_B_data,x1_data,c_data)
 P=likelihood(mu_data,mu_model);
 
 print P,mu, mu_hat,om,ol,ok
