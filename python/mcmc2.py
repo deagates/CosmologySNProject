@@ -79,6 +79,16 @@ end
 def mu_error:
     # gives error associated
     
+
+def likelihood_draw(z_data,m_B_data,x1_data,c_data)
+om,ol,ok=omega_draw();
+mu=mu_model(z_data,om,ok,ol);
+mu_hat=mu_data(m_B_data,x1_data,c_data)
+P=likelihood(mu_data,mu_model);
+
+print P,mu, mu_hat,om,ol,ok
+
+
 def step_mcmc(Single_run_length,z_data,m_B_data,x1_data,c_data):
     # evaluates one step of mcmc algorithm
     # put weight here for now
