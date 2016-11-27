@@ -25,7 +25,13 @@ def likelihood_calc(mu_model,mu_data):
     #using ChiSq
     likelihood=[];
 for i in data_length
-ChiSq()
+#chi2
+P=0;
+
+for i=1:data_length
+    p= (mu_data-mu_model)^2/mu_model;
+    P=P+p;
+end
 end
 
 
@@ -76,6 +82,28 @@ def mu_error:
 def step_mcmc(Single_run_length,z_data,m_B_data,x1_data,c_data):
     # evaluates one step of mcmc algorithm
     # put weight here for now
+%initialize 
+[P_old,mu, mu_hat,om,ol,ok] = likelihood_draw(z_data,m_B_data,x1_data,c_data);
+w=0;
+
+for ii=1:Single_run_length
+    
+    [P_new,mu, mu_hat,om,ol,ok] = likelihood_draw(z_data,m_B_data,x1_data,c_data)
+    
+    r=P_new/P_old;
+    
+    if r<1
+        w=w+1;
+    else
+        w=0;
+        P_old=P+new;
+    end
+end
+
+olfinal=ol;
+omfinal=om;
+
+
 
     # return p, l, w
     
