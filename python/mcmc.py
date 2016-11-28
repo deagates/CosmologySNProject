@@ -43,7 +43,7 @@ def likelihood_calc(mu_model,mu_data):
 def omega_draw():
     om = random.random()
     ol = 1 - om
-    ok = 1
+    ok = 0
     #ok=floor(rand*3)-1
     return om, ol, ok
 
