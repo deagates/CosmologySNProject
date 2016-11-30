@@ -1,7 +1,8 @@
 import sys, csv, random, math
 from data_wrapper import data_stuff
 from scipy import integrate as integral
-import numpy as np 
+import numpy as np
+import covariance as cov
 
 # final info from the mcmc
 
@@ -14,31 +15,51 @@ final_weights = []
 #global constants
 
 c = 1
-h = 0.673
+h = 0.7
 H0 = 100 * h #km/s/Mpc
 
 # for now treating alpha and beta as constants that do not have to be fit for
 # these are estimated values from Nielson et al.
-alpha = 0.1
-beta = 3
+alpha = 0.141
+beta = 3.1
 M = -19
 
 data_length = 0
-
+nparam = 1
 single_run_length=10
 NUM_ITER = 10
+
+
+def mc_standard_err():
+    # function for calculating mcmc error
+    # TBD
+    return 0
+
+def om_error():
+    # function for calculating om error
+    # TBD
+    return 0
 
 def likelihood_calc(mu_model,mu_data):
     # evaluates likelihood given the model
     # basic error
     likelihood=[]
     P = 0    
-    n = range(data_length-1)
+    n = range(data_length)
     for i in n:
         p = (mu_data[i]-mu_model[i])*(mu_data[i]-mu_model[i])/mu_model[i]
         P = P + p;
     return P
 
+def X2_likelihood_calc(mu_model,mu_data):
+    # evaluates X2 likelihood given the model
+    mu_data_np = np.array(mu_data)
+#    print np.shape(mu_data_np)
+    mu_model_np = np.array(mu_model)
+#    print np.shape(mu_model_np)
+    mu_diff = mu_data_np - mu_model_np
+    inv_covmat = np.linalg.inv(cov.get_mu_cov(alpha, beta))
+    return mu_diff.dot(inv_covmat.dot(mu_diff))
 
 def omega_draw():
     om = random.random()
@@ -63,15 +84,9 @@ def inverseHubble(z,om,ol,ok):
 def mu_model_calc(zhel_data,zcmb_data,omega_m,omega_l,omega_k):
     # calculates mu given z
     mu_model=[];
-    
-    def ii(x):
-        return H0/H(x,omega_m,omega_l,omega_k)
-    
-    n = range(data_length-1)
+
+    n = range(data_length)
     for i in n:
-        #z=M[i]
-        #I, err=sc.integrate.quad(ii(x),0,z)
-        #dL=(1+z)*(dH/sqrt(omega_k))*math.asin(sqrt(omgea_k)*I)
         dL = dLumi(zhel_data[i],zcmb_data[i],omega_m,omega_l,omega_k,inverseHubble)
         mu_temp = 25 + 5*np.log10(dL)
         mu_model.append(mu_temp)
@@ -81,17 +96,11 @@ def mu_data_calc(m_B,x1,C):
     # gives a functional form of mu given data + nuisance parameters
     mu_data=[]
     
-    n = range(data_length-1)
+    n = range(data_length)
     for i in n:
         f=m_B[i]-M+alpha*x1[i]-beta*C[i]
         mu_data.append(f)
     return mu_data
-
-
-def mu_error():
-    return 0
-    # gives error associated
-    
 
 def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data):
     om,ol,ok = omega_draw()
@@ -99,9 +108,8 @@ def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data):
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     #print "calculating estimated mu"
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data)
-    P = likelihood_calc(mu_hat, mu)
+    P = X2_likelihood_calc(mu_hat, mu)
     return P, mu, mu_hat, om, ol, ok
-
 
 def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data):
     # evaluates one step of mcmc algorithm
@@ -113,14 +121,16 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data):
     n = range(single_run_length)
     for i in n:
         P_new, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data)
-        r=P_new/P_old;
-        if r>1:
-            w=w+1;
+        r = P_new/P_old;
+        if r > 1:
+            w = w+1;
         else:
-            w=0;
-            P_old=P_new;
+            w = 0;
+            P_old = P_new;
+        if (P_new/(data_length-nparam) < 1):
+            print "ooo, small x2!"
+            break
     return om, ol, ok, w, P_new
-
     
 def covariance():
     # think about this later
@@ -134,6 +144,7 @@ def main():
     data_length = len(x1_data)
     print "Sample Size: ", data_length
     n = range(NUM_ITER)
+    print cov.get_mu_cov(0.13, 3.1)
     for i in n:
         print "Iteration: ", i+1
         param_omega_m, param_omega_l, param_omega_k, weight, likelihood = step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data)
@@ -142,7 +153,7 @@ def main():
         final_params_omega_k.append(param_omega_k)
         final_l.append(likelihood)
         final_weights.append(weight)
-    #print final_params_omega_m,final_params_omega_l,final_params_omega_k, final_l, final_weights
+    print final_params_omega_m,final_params_omega_l,final_params_omega_k, final_l, final_weights
     weighted_omega_m_avg = 0
     total_weight = 0
     for i in range(len(final_params_omega_m)):
