@@ -27,7 +27,7 @@ M_prime = -19
 
 data_length = 0
 nparam = 5
-single_run_length=100
+single_run_length=500
 NUM_ITER = 10
 
 
@@ -74,14 +74,14 @@ def nuisance_draw():
     global beta
     global delta_m
     global M_prime
-#    alpha=random.uniform(0,2)
-    alpha=random.gauss(0.141,0.006)
-    # beta=random.uniform(2,4)
-    beta = random.gauss(3.101,0.075)
-    #delta_m=random.uniform(-1,0)
-    delta_m = random.gauss(-0.070,0.023)
-    #M_prime = random.uniform(-20,-18)
-    M_prime = random.gauss(-19.05,0.02)
+    alpha=random.uniform(0,4)
+    #alpha=random.gauss(0.141,0.006)
+    beta=random.uniform(1,5)
+#    beta = random.gauss(3.101,0.075)
+    delta_m=random.uniform(-1,0)
+#    delta_m = random.gauss(-0.070,0.023)
+    M_prime = random.uniform(-20,-18)
+#    M_prime = random.gauss(-19.05,0.02)
     # for gaussian random.gauss(mu, sigma)
     return alpha, beta, delta_m, M_prime
 
@@ -115,7 +115,7 @@ def mu_model_calc(zhel_data,zcmb_data,omega_m,omega_l,omega_k):
 
     for i in range(data_length):
         dL = dLumi(zhel_data[i],zcmb_data[i],omega_m,omega_l,omega_k,inverseHubble)
-        mu_temp = 25+ 5*np.log10(dL)
+        mu_temp = 25+5*np.log10(dL)
         mu_model.append(mu_temp)
     return mu_model
 
@@ -160,6 +160,7 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host
     
     P, mu, mu_hat, om, ol, ok, a, b, dM, Mp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data);
     for i in range(single_run_length):
+    #while(True):
         print "OLD OM: ", om
         P_new, mu_temp, mu_hat_temp, om_temp, ol_temp, ok_temp, a_temp, b_temp, dM_temp, Mp_temp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
         print "NEW OM: ", om_temp
@@ -177,9 +178,12 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host
             b = b_temp
             dM = dM_temp
             Mp = Mp_temp
-        # if (P/(data_length-nparam) < 1):
-        #     print "ooo, small x2!"
-        #     break
+        if (P/(data_length-nparam) < 2):
+             print "ooo, small x2!"
+             break
+        print "dof: ",data_length-nparam
+        print "Likelihood: ",P/(data_length-nparam)
+        print "alpha, beta, dM, Mp: ",a,b,dM,Mp
     return om, ol, ok, w, P
     
 def covariance():
