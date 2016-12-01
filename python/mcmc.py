@@ -20,16 +20,16 @@ H0 = 100 * h #km/s/Mpc
 
 # for now treating alpha and beta as constants that do not have to be fit for
 # these are estimated values from Nielson et al.
-# alpha = 0.141
-# beta = 3.1
+alpha = 0.141
+beta = 3.1
 delta_m = 0
 M_prime = -19
-alpha = 0
-beta = 0
+#alpha = 0
+#beta = 0
 
 data_length = 0
 nparam = 5
-single_run_length=1000
+single_run_length=100
 NUM_ITER = 10
 
 
@@ -112,7 +112,7 @@ def mu_model_calc(zhel_data,zcmb_data,omega_m,omega_l,omega_k):
 
     for i in range(data_length):
         dL = dLumi(zhel_data[i],zcmb_data[i],omega_m,omega_l,omega_k,inverseHubble)
-        mu_temp = 25 + 5*np.log10(dL)
+        mu_temp = 25+ 5*np.log10(dL)
         mu_model.append(mu_temp)
     return mu_model
 
@@ -128,35 +128,56 @@ def mu_data_calc(m_B,x1,C,M_list,alpha,beta):
 
 def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
     om,ol,ok = omega_draw()
-    alpha,beta,dM,M_prime = nuisance_draw()
+    dM = delta_m
+    a = alpha
+    b = beta
+    Mp = M_prime
+#    a,b,dM,Mp = nuisance_draw()
     M_list = M_step(host_data,dM,M_prime)
     #print "calculating model mu"
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     #print "calculating estimated mu"
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M_list,alpha,beta)
-    P = X2_likelihood_calc(mu_hat, mu)
-    return P, mu, mu_hat, om, ol, ok
+    P = likelihood_calc(mu_hat, mu)
+    return P, mu, mu_hat, om, ol, ok, a, b, dM, Mp
 
 def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
-    # evaluates one step of mcmc algorithm
-    # put weight here for now
-    #initialize 
-    P_old, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data);
-#    print P_old, mu, mu_hat, om, ol, ok
-    w=0
-    n = range(single_run_length)
-    for i in n:
-        P_new, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
-        r = P_new/P_old;
+    # step through the mcmc
+    P = 0
+    mu = 0
+    mu_hat = 0
+    om = 0
+    ol = 0
+    ok = 0
+    a = 0
+    b = 0
+    dM = 0
+    Mp = 0
+    w = 0 # weight
+    
+    P, mu, mu_hat, om, ol, ok, a, b, dM, Mp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data);
+    for i in range(single_run_length):
+        print "OLD OM: ", om
+        P_new, mu_temp, mu_hat_temp, om_temp, ol_temp, ok_temp, a_temp, b_temp, dM_temp, Mp_temp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
+        print "NEW OM: ", om_temp
+        r = P_new/P
+        print "ratio: ", r
         if r > 1:
-            w = w+1;
+            w = w+1
         else:
-            w = 0;
-            P_old = P_new;
-        if (P_new/(data_length-nparam) < 1):
+            w = 0
+            P = P_new
+            om = om_temp
+            ol = ol_temp
+            ok = ok_temp
+            a = a_temp
+            b = b_temp
+            dM = dM_temp
+            Mp = Mp_temp
+        if (P/(data_length-nparam) < 1):
             print "ooo, small x2!"
             break
-    return om, ol, ok, w, P_new
+    return om, ol, ok, w, P
     
 def covariance():
     # think about this later
