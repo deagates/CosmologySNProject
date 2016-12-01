@@ -14,7 +14,7 @@ final_weights = []
 
 #global constants
 
-c = 1
+c = 3*np.power(10,5)
 h = 0.7
 H0 = 100 * h #km/s/Mpc
 
@@ -24,8 +24,6 @@ alpha = 0.141
 beta = 3.1
 delta_m = 0
 M_prime = -19
-#alpha = 0
-#beta = 0
 
 data_length = 0
 nparam = 5
@@ -73,13 +71,17 @@ def omega_draw():
 
 def nuisance_draw():
     global alpha
-    alpha=random.uniform(0,2)
     global beta
-    beta=random.uniform(2,4)
     global delta_m
-    delta_m=random.uniform(-1,0)
     global M_prime
-    M_prime = random.uniform(-20,-18)
+#    alpha=random.uniform(0,2)
+    alpha=random.gauss(0.141,0.006)
+    # beta=random.uniform(2,4)
+    beta = random.gauss(3.101,0.075)
+    #delta_m=random.uniform(-1,0)
+    delta_m = random.gauss(-0.070,0.023)
+    #M_prime = random.uniform(-20,-18)
+    M_prime = random.gauss(-19.05,0.02)
     # for gaussian random.gauss(mu, sigma)
     return alpha, beta, delta_m, M_prime
 
@@ -88,7 +90,8 @@ def dLumi(zhel, zcmb, om, ol, ok, func):
     # and then outputs a luminosity distance!
     # arxiv 1601.01451 for reference, eq 2,3
     distance, distance_err = integral.quad(func, 0, zcmb, args=(om,ol,ok,))
-    distance = (1+zhel)*c*distance/H0 
+    distance = (1+zhel)*c*distance/H0
+#    print "distance: ", distance, " zhel: ", zhel
     return distance
 
 def inverseHubble(z,om,ol,ok):
@@ -132,13 +135,13 @@ def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
     a = alpha
     b = beta
     Mp = M_prime
-#    a,b,dM,Mp = nuisance_draw()
+    a,b,dM,Mp = nuisance_draw()
     M_list = M_step(host_data,dM,M_prime)
     #print "calculating model mu"
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     #print "calculating estimated mu"
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M_list,alpha,beta)
-    P = likelihood_calc(mu_hat, mu)
+    P = X2_likelihood_calc(mu_hat, mu)
     return P, mu, mu_hat, om, ol, ok, a, b, dM, Mp
 
 def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
@@ -174,9 +177,9 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host
             b = b_temp
             dM = dM_temp
             Mp = Mp_temp
-        if (P/(data_length-nparam) < 1):
-            print "ooo, small x2!"
-            break
+        # if (P/(data_length-nparam) < 1):
+        #     print "ooo, small x2!"
+        #     break
     return om, ol, ok, w, P
     
 def covariance():
