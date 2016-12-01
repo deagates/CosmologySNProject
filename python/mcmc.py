@@ -20,14 +20,14 @@ H0 = 100 * h #km/s/Mpc
 
 # for now treating alpha and beta as constants that do not have to be fit for
 # these are estimated values from Nielson et al.
-alpha = 0.141
+alpha = 1
 beta = 3.1
-delta_m = 0
+delta_m = -0.07
 M_prime = -19
 
 data_length = 0
 nparam = 5
-single_run_length=500
+single_run_length=10
 NUM_ITER = 10
 
 
@@ -49,6 +49,7 @@ def likelihood_calc(mu_model,mu_data):
     n = range(data_length)
     for i in n:
         p = (mu_data[i]-mu_model[i])*(mu_data[i]-mu_model[i])/mu_model[i]
+        print "DIFF: ",mu_data[i]-mu_model[i]
         P = P + p;
     return P
 
@@ -64,6 +65,7 @@ def X2_likelihood_calc(mu_model,mu_data):
 
 def omega_draw():
     om = random.random()
+#    om = random.uniform(0.2,0.4)
     ol = 1 - om
     ok = 0
     #ok=floor(rand*3)-1
@@ -74,14 +76,14 @@ def nuisance_draw():
     global beta
     global delta_m
     global M_prime
-    alpha=random.uniform(0,4)
-    #alpha=random.gauss(0.141,0.006)
-    beta=random.uniform(1,5)
-#    beta = random.gauss(3.101,0.075)
+    alpha=random.uniform(0,1)
+    alpha=random.gauss(0.141,0.006)
+    beta=random.uniform(2.5,5)
+    beta = random.gauss(3.101,0.075)
     delta_m=random.uniform(-1,0)
-#    delta_m = random.gauss(-0.070,0.023)
+    delta_m = random.gauss(-0.070,0.023)
     M_prime = random.uniform(-20,-18)
-#    M_prime = random.gauss(-19.05,0.02)
+    M_prime = random.gauss(-19.05,0.02)
     # for gaussian random.gauss(mu, sigma)
     return alpha, beta, delta_m, M_prime
 
@@ -102,7 +104,7 @@ def inverseHubble(z,om,ol,ok):
 def M_step(host_mass,delta_m,M_prime):
     M = []
     for i in range(data_length):
-        if host_mass[i] < np.power(10,10):
+        if host_mass[i] < 10:
             f = M_prime
         else:
             f = M_prime + delta_m
@@ -117,6 +119,7 @@ def mu_model_calc(zhel_data,zcmb_data,omega_m,omega_l,omega_k):
         dL = dLumi(zhel_data[i],zcmb_data[i],omega_m,omega_l,omega_k,inverseHubble)
         mu_temp = 25+5*np.log10(dL)
         mu_model.append(mu_temp)
+#        print "model: ",mu_temp
     return mu_model
 
 def mu_data_calc(m_B,x1,C,M_list,alpha,beta):
@@ -127,6 +130,7 @@ def mu_data_calc(m_B,x1,C,M_list,alpha,beta):
     for i in n:
         f=m_B[i]-M_list[i]+alpha*x1[i]-beta*C[i]
         mu_data.append(f)
+#        print "data: " ,f
     return mu_data
 
 def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
@@ -135,13 +139,13 @@ def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
     a = alpha
     b = beta
     Mp = M_prime
-    a,b,dM,Mp = nuisance_draw()
+#    a,b,dM,Mp = nuisance_draw()
     M_list = M_step(host_data,dM,M_prime)
     #print "calculating model mu"
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     #print "calculating estimated mu"
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M_list,alpha,beta)
-    P = X2_likelihood_calc(mu_hat, mu)
+    P = likelihood_calc(mu_hat, mu)
     return P, mu, mu_hat, om, ol, ok, a, b, dM, Mp
 
 def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
@@ -159,8 +163,8 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host
     w = 0 # weight
     
     P, mu, mu_hat, om, ol, ok, a, b, dM, Mp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data);
-    for i in range(single_run_length):
-    #while(True):
+    #for i in range(single_run_length):
+    while(True):
         print "OLD OM: ", om
         P_new, mu_temp, mu_hat_temp, om_temp, ol_temp, ok_temp, a_temp, b_temp, dM_temp, Mp_temp = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
         print "NEW OM: ", om_temp
@@ -178,9 +182,9 @@ def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host
             b = b_temp
             dM = dM_temp
             Mp = Mp_temp
-        if (P/(data_length-nparam) < 2):
-             print "ooo, small x2!"
-             break
+        # if (P/(data_length-nparam) < 2):
+        #      print "ooo, small x2!"
+        #      break
         print "dof: ",data_length-nparam
         print "Likelihood: ",P/(data_length-nparam)
         print "alpha, beta, dM, Mp: ",a,b,dM,Mp
