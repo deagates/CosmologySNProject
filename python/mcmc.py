@@ -20,13 +20,16 @@ H0 = 100 * h #km/s/Mpc
 
 # for now treating alpha and beta as constants that do not have to be fit for
 # these are estimated values from Nielson et al.
-alpha = 0.141
-beta = 3.1
-M = -19
+# alpha = 0.141
+# beta = 3.1
+delta_m = 0
+M_prime = -19
+alpha = 0
+beta = 0
 
 data_length = 0
-nparam = 1
-single_run_length=10
+nparam = 5
+single_run_length=1000
 NUM_ITER = 10
 
 
@@ -68,6 +71,18 @@ def omega_draw():
     #ok=floor(rand*3)-1
     return om, ol, ok
 
+def nuisance_draw():
+    global alpha
+    alpha=random.uniform(0,2)
+    global beta
+    beta=random.uniform(2,4)
+    global delta_m
+    delta_m=random.uniform(-1,0)
+    global M_prime
+    M_prime = random.uniform(-20,-18)
+    # for gaussian random.gauss(mu, sigma)
+    return alpha, beta, delta_m, M_prime
+
 def dLumi(zhel, zcmb, om, ol, ok, func):
     # takes heliocentric redshift + CMB frame redshift values
     # and then outputs a luminosity distance!
@@ -81,46 +96,57 @@ def inverseHubble(z,om,ol,ok):
     # om is omega_matter
     return np.sqrt(om*np.power((1+z),3)+ok*np.power((1+z),2)+ol)
 
+def M_step(host_mass,delta_m,M_prime):
+    M = []
+    for i in range(data_length):
+        if host_mass[i] < np.power(10,10):
+            f = M_prime
+        else:
+            f = M_prime + delta_m
+        M.append(f)
+    return M
+
 def mu_model_calc(zhel_data,zcmb_data,omega_m,omega_l,omega_k):
     # calculates mu given z
     mu_model=[];
 
-    n = range(data_length)
-    for i in n:
+    for i in range(data_length):
         dL = dLumi(zhel_data[i],zcmb_data[i],omega_m,omega_l,omega_k,inverseHubble)
         mu_temp = 25 + 5*np.log10(dL)
         mu_model.append(mu_temp)
     return mu_model
 
-def mu_data_calc(m_B,x1,C):
+def mu_data_calc(m_B,x1,C,M_list,alpha,beta):
     # gives a functional form of mu given data + nuisance parameters
     mu_data=[]
     
     n = range(data_length)
     for i in n:
-        f=m_B[i]-M+alpha*x1[i]-beta*C[i]
+        f=m_B[i]-M_list[i]+alpha*x1[i]-beta*C[i]
         mu_data.append(f)
     return mu_data
 
-def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data):
+def likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
     om,ol,ok = omega_draw()
+    alpha,beta,dM,M_prime = nuisance_draw()
+    M_list = M_step(host_data,dM,M_prime)
     #print "calculating model mu"
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     #print "calculating estimated mu"
-    mu_hat = mu_data_calc(m_B_data,x1_data,c_data)
+    mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M_list,alpha,beta)
     P = X2_likelihood_calc(mu_hat, mu)
     return P, mu, mu_hat, om, ol, ok
 
-def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data):
+def step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data):
     # evaluates one step of mcmc algorithm
     # put weight here for now
     #initialize 
-    P_old, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data);
+    P_old, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data);
 #    print P_old, mu, mu_hat, om, ol, ok
     w=0
     n = range(single_run_length)
     for i in n:
-        P_new, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data)
+        P_new, mu, mu_hat, om, ol, ok = likelihood_draw(zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
         r = P_new/P_old;
         if r > 1:
             w = w+1;
@@ -139,7 +165,7 @@ def covariance():
 def main():
     # call functions
     data_wr = data_stuff()
-    m_B_data, zcmb_data, zhel_data, c_data, x1_data = data_wr.import_data("../data/jla_lcparams.txt")
+    m_B_data, zcmb_data, zhel_data, c_data, x1_data, host_data = data_wr.import_data("../data/jla_lcparams.txt")
     global data_length
     data_length = len(x1_data)
     print "Sample Size: ", data_length
@@ -147,7 +173,7 @@ def main():
     print cov.get_mu_cov(0.13, 3.1)
     for i in n:
         print "Iteration: ", i+1
-        param_omega_m, param_omega_l, param_omega_k, weight, likelihood = step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data)
+        param_omega_m, param_omega_l, param_omega_k, weight, likelihood = step_mcmc(single_run_length,zhel_data,zcmb_data,m_B_data,x1_data,c_data,host_data)
         final_params_omega_m.append(param_omega_m)
         final_params_omega_l.append(param_omega_l)
         final_params_omega_k.append(param_omega_k)
@@ -160,6 +186,6 @@ def main():
         weighted_omega_m_avg = weighted_omega_m_avg + final_params_omega_m[i]*final_weights[i]
         total_weight = total_weight + final_weights[i]
     print "WEIGHTED OMEGA_M AVG: ", weighted_omega_m_avg/total_weight
-
+    print "alpha, beta, M', dM", alpha, beta, M_prime, delta_m
 if __name__ == "__main__":
     main()

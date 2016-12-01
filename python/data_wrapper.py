@@ -13,10 +13,10 @@ class data_stuff:
     def __init__(self):
         print "data wrapper init!"
 
-    def inverseHubble(self,z,lm):
-        # Calculates reduced hubble assuming lambda CDM
-        # lm is omega_matter
-        return np.sqrt(lm*np.power((1+z),3)+(1-lm))
+    # def inverseHubble(self,z,lm):
+    #     # Calculates reduced hubble assuming lambda CDM
+    #     # lm is omega_matter
+    #     return np.sqrt(lm*np.power((1+z),3)+(1-lm))
 
     def abs_mag(self,hostmass):
         # returns true or false given hostmass
@@ -29,12 +29,12 @@ class data_stuff:
         else:
             return false
 
-    def dLumi(self,zhel, zcmb, lm, func):
-        # takes heliocentric redshift + CMB frame redshift values
-        # and then outputs a luminosity distance!
-        # arxiv 1601.01451 for reference, eq 2,3
-        distance = (1+zhel)*c*sc.integrate.quad(inverseHubble, 0, zcmb, args=(lm,))/H0
-        return distance
+    # def dLumi(self,zhel, zcmb, lm, func):
+    #     # takes heliocentric redshift + CMB frame redshift values
+    #     # and then outputs a luminosity distance!
+    #     # arxiv 1601.01451 for reference, eq 2,3
+    #     distance = (1+zhel)*c*sc.integrate.quad(inverseHubble, 0, zcmb, args=(lm,))/H0
+    #     return distance
 
     def import_data(self,inputfile):
         datafile = open(inputfile, 'r')
@@ -46,6 +46,7 @@ class data_stuff:
         zhel_list = []
         c = []
         x1_list = []
+        hostmass_list = []
 
 
         for line in datafile:
@@ -78,6 +79,7 @@ class data_stuff:
             zhel_list.append(zhel)
             x1_list.append(x1)
             c.append(color)
+            hostmass_list.append(hostmass)
         # returns list
-        return mb_list, zcmb_list, zhel_list, c, x1_list
+        return mb_list, zcmb_list, zhel_list, c, x1_list, hostmass_list
 
