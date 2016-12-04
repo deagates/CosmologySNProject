@@ -333,8 +333,15 @@ def main(NUM_ITER,single_run_length,single_run_length_mini,ResultsName):
     global data_length
     data_length = len(x1_data)
     print("Sample Size: ", data_length)
+    output = open(ResultsName, 'a')
+    output.write("NIterations: " + str(NUM_ITER) + " Single Run Length: " + str(single_run_length) + " Single Run Length Mini: " + str(single_run_length_mini) + "\n")
+    output.write('alpha beta Mp dM omega_lambda omega_m X2 weight\n')
+    output.close()
     for i in range(NUM_ITER):
         print("Iterations left: ", NUM_ITER-i)
+        output = open(ResultsName, 'a')
+        output.write("new iteration\n")
+        output.close()
         param_omega_m, param_omega_l, param_omega_k, alpha, beta, Mp, dM, weight, likelihood = step_mcmc(single_run_length,single_run_length_mini,zhel_data,zcmb_data,m_B_data,x1_data,c_data,hostmass_data,ResultsName)
         final_params_omega_m.append(param_omega_m)
         final_params_omega_l.append(param_omega_l)
