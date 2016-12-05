@@ -69,7 +69,7 @@ accept_mini = 0
 reject = 0
 accept = 0 
 
-def X2_likelihood_calc(mu_model,mu_data):
+def X2_likelihood_calc(mu_model,mu_data,alpha,beta):
     # evaluates X2 likelihood given the model
     mu_data_np = np.array(mu_data)
 #    print np.shape(mu_data_np)
@@ -181,7 +181,7 @@ def likelihood_draw_mini(m_B_data,x1_data,c_data,hostmass,mu,curr_alpha,curr_bet
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M,alpha,beta)
     
     #calculate X2_likelihood
-    P = X2_likelihood_calc(mu_hat, mu)
+    P = X2_likelihood_calc(mu_hat, mu, alpha, beta)
     return P, mu_hat, alpha, beta, Mp, dM    
     
 def step_mcmc_mini(single_run_length_mini,m_B_data,x1_data,c_data,hostmass,mu,curr_alpha,curr_beta,curr_dM,curr_Mp) : 
@@ -197,7 +197,7 @@ def step_mcmc_mini(single_run_length_mini,m_B_data,x1_data,c_data,hostmass,mu,cu
 
     M = M_calc(hostmass,Mp,dM)    
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M,alpha,beta)
-    P_mini = X2_likelihood_calc(mu_hat, mu)
+    P_mini = X2_likelihood_calc(mu_hat, mu, alpha, beta)
 
     #initalize weight    
     w_mini = 0
@@ -243,7 +243,7 @@ def likelihood_draw(single_run_length_mini,zhel_data,zcmb_data,m_B_data,x1_data,
     mu = mu_model_calc(zhel_data,zcmb_data,om,ok,ol)
     M = M_calc(hostmass,Mp,dM)    
     mu_hat = mu_data_calc(m_B_data,x1_data,c_data,M,alpha,beta)
-    P = X2_likelihood_calc(mu_hat, mu)
+    P = X2_likelihood_calc(mu_hat, mu, alpha, beta)
     return P, mu, mu_hat, om, ol, ok, alpha, beta, Mp, dM
 
 def proposal_draw(single_run_length_mini,zhel_data,
@@ -260,7 +260,7 @@ def proposal_draw(single_run_length_mini,zhel_data,
                                                                  hostmass,mu,curr_alpha,
                                                                  curr_beta,curr_dM,curr_Mp) 
     # calculates X2 likelihood from mu and mu_hat
-    P = X2_likelihood_calc(mu_hat, mu)
+    P = X2_likelihood_calc(mu_hat, mu, alpha, beta)
     return P, mu, mu_hat, om, ol, ok, alpha, beta, Mp, dM
     
 def step_mcmc(single_run_length,single_run_length_mini,zhel_data,zcmb_data,m_B_data,x1_data,c_data,hostmass,ResultsName):
