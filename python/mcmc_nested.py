@@ -34,7 +34,8 @@ nparam = 5 # number of parameters that can vary (omega_m, and 4 nusicene paramet
 #ResultsName='result.txt'
 
 #global constants
-c = 3*np.power(10,5)
+#c = 3*np.power(10,5)
+c = 2.99792*np.power(10,5)
 h = 0.7
 H0 = 100 * h #km/s/Mpc
 plot_mcmc_mini_conv = "off"
