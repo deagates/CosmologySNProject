@@ -64,6 +64,10 @@ final_params_dM = []
 
 final_l = []
 final_weights = []
+reject_mini = 0
+accept_mini = 0
+reject = 0
+accept = 0 
 
 def X2_likelihood_calc(mu_model,mu_data):
     # evaluates X2 likelihood given the model
@@ -83,7 +87,7 @@ def omega_draw():
     return om, ol, ok
 
 def omega_step(om,ok):
-    sig = 0.01
+    sig = 0.1
     low_bound = 0
     up_bound = 1
     om_new = scipy.stats.truncnorm.rvs((low_bound-om)/sig,(up_bound-om)/sig,loc=om,scale=sig,size=1)[0]
@@ -120,15 +124,15 @@ def nuisance_draw():
 def nuisance_step(a,b,dM,Mp):
     # steps around the current nuisance
     # parameters to find the new parameters
-
+    sig = 0.8
     #alpha=random.gauss(a,0.4)
-    alpha = scipy.stats.truncnorm.rvs((-a)/0.01,(4-a)/0.01,loc=a,scale=0.01,size=1)[0]
+    alpha = scipy.stats.truncnorm.rvs((-a)/sig,(4-a)/sig,loc=a,scale=sig,size=1)[0]
     #beta=random.gauss(b,0.4)
-    beta = scipy.stats.truncnorm.rvs((1-b)/0.01,(5-a)/0.01,loc=b,scale=0.01,size=1)[0]
+    beta = scipy.stats.truncnorm.rvs((1-b)/sig,(5-a)/sig,loc=b,scale=sig,size=1)[0]
     #delta_m=random.gauss(dM,0.1)
-    delta_m = scipy.stats.truncnorm.rvs((-1-dM)/0.01,(-dM)/0.01,loc=dM,scale=0.01,size=1)[0]
+    delta_m = scipy.stats.truncnorm.rvs((-1-dM)/sig,(-dM)/sig,loc=dM,scale=sig,size=1)[0]
     #M_prime = random.gauss(Mp,0.2)
-    M_prime = scipy.stats.truncnorm.rvs((-20-Mp)/0.01,(-18-Mp)/0.01,loc=Mp,scale=0.01,size=1)[0]
+    M_prime = scipy.stats.truncnorm.rvs((-20-Mp)/sig,(-18-Mp)/sig,loc=Mp,scale=sig,size=1)[0]
     return alpha, beta, M_prime, delta_m
     
 def dLumi(zhel, zcmb, om, ol, ok, func):
@@ -210,6 +214,9 @@ def step_mcmc_mini(single_run_length_mini,m_B_data,x1_data,c_data,hostmass,mu,cu
         acc = random.random()
         # if new temporary X2 likelhood is > than pervious stored X2 likelihood... 
         if (r > 1) or (acc < r): 
+            #print("accept mini")
+            global accept_mini
+            accept_mini = accept_mini + 1
             w_mini = 0;
             #and set X2 likelihood and corresponding parameters stored for future comparison
             P_mini = P_mini_temp;
@@ -220,6 +227,9 @@ def step_mcmc_mini(single_run_length_mini,m_B_data,x1_data,c_data,hostmass,mu,cu
             dM = dM_temp;
             w_mini = w_mini + 1; 
         else:
+            #print ("reject mini")
+            global reject_mini
+            reject_mini = reject_mini + 1
             w_mini = w_mini + 1; 
     return alpha, beta, Mp,  dM, w_mini, P_mini, mu_hat    
 
@@ -313,6 +323,9 @@ def step_mcmc(single_run_length,single_run_length_mini,zhel_data,zcmb_data,m_B_d
         acc = random.random()
 
         if (r > 1) or (acc < r): 
+            #print("accept")
+            global accept
+            accept = accept + 1
             w = 0;
             P = P_temp
             om = om_temp
@@ -323,6 +336,9 @@ def step_mcmc(single_run_length,single_run_length_mini,zhel_data,zcmb_data,m_B_d
             Mp = Mp_temp
             dM = dM_temp
         else:
+            #print("reject")
+            global reject
+            reject = reject + 1
             w = w + 1      
     return om, ol, ok,alpha, beta, Mp, dM, w, P
 
@@ -353,7 +369,8 @@ def main(NUM_ITER,single_run_length,single_run_length_mini,ResultsName):
         final_l.append(likelihood)
         final_weights.append(weight)
         print("~~~")       
- 
+    print("REJECT: " + str(reject) + " ACCEPT: " + str(accept))
+    print("REJECT MINI: " + str(reject_mini) + " ACCEPT MINI: " + str(accept_mini))
     weighted_omega_m_avg=sum([final_params_omega_m[i]*final_weights[i] for i in range(len(final_params_omega_m))])    
     weighted_omega_l_avg=sum([final_params_omega_l[i]*final_weights[i] for i in range(len(final_params_omega_m))])
     weighted_alpha_avg=sum([final_params_alpha[i]*final_weights[i] for i in range(len(final_params_omega_m))])
