@@ -128,7 +128,7 @@ def nuisance_step(a,b,dM,Mp):
     #alpha=random.gauss(a,0.4)
     alpha = scipy.stats.truncnorm.rvs((-a)/sig,(4-a)/sig,loc=a,scale=sig,size=1)[0]
     #beta=random.gauss(b,0.4)
-    beta = scipy.stats.truncnorm.rvs((1-b)/sig,(5-a)/sig,loc=b,scale=sig,size=1)[0]
+    beta = scipy.stats.truncnorm.rvs((1-b)/sig,(5-b)/sig,loc=b,scale=sig,size=1)[0]
     #delta_m=random.gauss(dM,0.1)
     delta_m = scipy.stats.truncnorm.rvs((-1-dM)/sig,(-dM)/sig,loc=dM,scale=sig,size=1)[0]
     #M_prime = random.gauss(Mp,0.2)
