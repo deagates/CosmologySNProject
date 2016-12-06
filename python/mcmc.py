@@ -153,9 +153,9 @@ def M_calc(hostmass,Mp,dM):
     M = []
     for i in range(data_length):
         if hostmass[i] < 10:
-            f = M_prime
+            f = Mp
         else:
-            f = M_prime + delta_m
+            f = Mp + dM
         M.append(f)
     return M
 
