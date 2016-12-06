@@ -66,6 +66,9 @@ final_weights = []
 reject = 0
 accept = 0 
 
+o_sig = 0.5
+nuis_sig = 0.8
+
 def X2_likelihood_calc(mu_model,mu_data,alpha,beta):
     # evaluates X2 likelihood given the model
     mu_data_np = np.array(mu_data)
@@ -84,7 +87,7 @@ def omega_draw():
     return om, ol, ok
 
 def omega_step(om,ok):
-    sig = 0.1
+    sig = o_sig
     low_bound = 0
     up_bound = 1
     om_new = scipy.stats.truncnorm.rvs((low_bound-om)/sig,(up_bound-om)/sig,loc=om,scale=sig,size=1)[0]
@@ -102,13 +105,13 @@ def nuisance_draw():
     global delta_m
     global M_prime
 
-    alpha=random.uniform(0,4)
+    alpha=random.uniform(-1,4)
     #alpha=random.gauss(0.141,0.006)
-    beta=random.uniform(1,5)
+    beta=random.uniform(1,6)
     #beta = random.gauss(3.101,0.075)
-    delta_m=random.uniform(-1,0)
+    delta_m=random.uniform(-2,1)
     #delta_m = random.gauss(-0.070,0.023)
-    M_prime = random.uniform(-20,-18)
+    M_prime = random.uniform(-21,-17)
     #M_prime = random.gauss(-19.05,0.02)
     # for gaussian random.gauss(mu, sigma)    
 
@@ -122,14 +125,15 @@ def nuisance_step(a,b,dM,Mp):
     # steps around the current nuisance
     # parameters to find the new parameters
     sig = 0.8
+    sig = nuis_sig
     #alpha=random.gauss(a,0.4)
-    alpha = scipy.stats.truncnorm.rvs((-a)/sig,(4-a)/sig,loc=a,scale=sig,size=1)[0]
+    alpha = scipy.stats.truncnorm.rvs((-1-a)/sig,(4-a)/sig,loc=a,scale=sig,size=1)[0]
     #beta=random.gauss(b,0.4)
-    beta = scipy.stats.truncnorm.rvs((1-b)/sig,(5-b)/sig,loc=b,scale=sig,size=1)[0]
+    beta = scipy.stats.truncnorm.rvs((1-b)/sig,(6-b)/sig,loc=b,scale=sig,size=1)[0]
     #delta_m=random.gauss(dM,0.1)
-    delta_m = scipy.stats.truncnorm.rvs((-1-dM)/sig,(-dM)/sig,loc=dM,scale=sig,size=1)[0]
+    delta_m = scipy.stats.truncnorm.rvs((-2-dM)/sig,(1-dM)/sig,loc=dM,scale=sig,size=1)[0]
     #M_prime = random.gauss(Mp,0.2)
-    M_prime = scipy.stats.truncnorm.rvs((-20-Mp)/sig,(-18-Mp)/sig,loc=Mp,scale=sig,size=1)[0]
+    M_prime = scipy.stats.truncnorm.rvs((-21-Mp)/sig,(-17-Mp)/sig,loc=Mp,scale=sig,size=1)[0]
     return alpha, beta, M_prime, delta_m
     
 def dLumi(zhel, zcmb, om, ol, ok, func):
@@ -279,7 +283,8 @@ def main(NUM_ITER,single_run_length,ResultsName):
     data_length = len(x1_data)
     print("Sample Size: ", data_length)
     output = open(ResultsName, 'a')
-    output.write("NIterations: " + str(NUM_ITER) + " Single Run Length: " + str(single_run_length) +  "\n")
+    output.write("NIterations: " + str(NUM_ITER) + " Single Run Length: " + str(single_run_length) +  " om_sig: "\
+                 + str(o_sig) + " nuis_sig: " + str(nuis_sig) + "\n")
     output.write('alpha beta Mp dM omega_lambda omega_m X2 weight\n')
     output.close()
     for i in range(NUM_ITER):
