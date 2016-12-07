@@ -48,7 +48,8 @@ We perform a likelihood analysis using MCMC methods. Our code can be found onlin
 \newline \par Included in this matrix are: the statistical uncertainties encompass the light-curve fit uncertainties, the photometric calibration uncertainties, uncertainties associated with the light-curve model, uncertainties associated with selection biases from the surveys, the uncertainties of the host masses, an uncertainty to limit sensitivity to Milky Way dust extinction, and two uncertainties taken from the compilation of all of the supernova data not from SDSS (i.e. SNLS, HST, etc.) from Conley et al. \cite{c11}. This is then combined to calculate the covariance matrix of the distance modulus, which is defined in eq. 13 of \cite{sdss} as follows:
 $$C = A C_\eta A^\dagger + \text{diag}(\frac{5\sigma_z}{z \text{log} 10})^2 + \text{diag}(\sigma_\text{lens}^2) + \text{diag}(\sigma_{\text{coh}}^2). $$
 This combines more uncertainties on the redshift, additional effects from gravitational lensing, and a catch-all term for other uncertainties on the magnitudes. We use the final $C$ matrix in the calculation of our likelihoods. 
-\par We ran our MCMC analyzer for INSERT NITER iterations, each with 20,000 steps. The prior distributions on the five fit parameters were all flat, with bounds as follows:
+\par We ran our MCMC analyzer to generate 41,528 unique points. Each iteration of our MCMC had 20,000 steps. The prior distributions on the five fit parameters were all flat, with bounds as given in table \ref{bounds}.
+\begin{table}
 \begin{center}
 \begin{tabular}{ |c|c|c| } 
  \hline
@@ -60,7 +61,9 @@ This combines more uncertainties on the redshift, additional effects from gravit
 $\Delta_M$ & -2 & 1 \\ 
  \hline
 \end{tabular}
+\caption{Constraints on parameter values during fitting.}\label{bounds}
 \end{center}
+\end{table}
 \par After the initial random draw of the parameter, the next iterative parameter value was picked using a random draw from a normal distribution centered around the current parameter value with a $\sigma$ of 0.5 for $\Omega_M$ and a $\sigma$ of 0.8 for the nuisance parameters. These values were hand-tuned by running several test runs and looking at the trace plots, shown in \cref{fig:alpha,fig:om,fig:mp,fig:dm,fig:beta}. 
 \begin{figure}
  %\centering
@@ -123,6 +126,24 @@ $\Delta_M$ & -2 & 1 \\
 \caption{\label{fig:chi2}The final values of $\Omega_M$ from each MCMC iteration versus the final $\chi^2$ values.}
 \end{figure}
 \section{IV. Analysis} 
+Our final values are quoted in the final table (see Table \ref{tblv}). Errors were approximated as 68\% around the median value of the distribution. The distributions of the points that went into these calculations are given in \cref{fig:omhist,fig:alphahist,fig:betahist,fig:dMhist,fig:Mphist}.
+\begin{table}
+\begin{center}
+\def\arraystretch{1.5}
+\begin{tabular}{ |c|c|c|c|c| } 
+ \hline
+ \textbf{Parameter} & \textbf{Avg.} & \textbf{Wgtd. Avg.} & \textbf{Med.} \\ 
+ $\Omega_M$ & 0.485 & 0.468 & $0.481^{+0.321}_{-0.312}$\\ 
+ $\alpha$ & 0.319 & 0.287 & $0.293^{+0.384}_{-0.342}$\\ 
+ $\beta$ & 4.309 & 4.172 &  $4.516^{+0.989}_{-1.473}$\\ 
+ $M'_B$ & -19.368 & -19.361 & $-19.382^{+0.626}_{-0.603}$ \\ 
+$\Delta_M$ & -0.303 &-0.289 & $-0.268^{+0.701}_{-0.780}$ \\
+ \hline
+\end{tabular}
+ \caption{Final MCMC values.}\label{tblv}
+
+\end{center}
+\end{table}
 \section{V. Discussion}
 Our approach follows the steps of \cite{sdss}, using the same likelihood function and fit parameters. In future studies, to make a direct comparison with J.T. Nielson et al., our approach can be expanded to adopt their likelihood function. 
 They employ an alternative likelihood function, which they define as \begin{align*}\mathscr{L} = |2\pi(C+A^T \Sigma_l A)|^{-1/2}\; \\
