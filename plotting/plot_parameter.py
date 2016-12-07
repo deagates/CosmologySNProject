@@ -10,6 +10,9 @@ import csv
 import numpy as np
 import pylab as plt
 
+final_om = []
+final_weight = []
+final_chi = []
 
 def import_data(inputfile):
     # expects: 
@@ -27,8 +30,6 @@ def import_data(inputfile):
     p_list = []
     w_list = []
 
-    final_om = []
-    final_weight = []
 
     for line in datafile:
         numLines = numLines + 1
@@ -56,13 +57,15 @@ def import_data(inputfile):
         p_list.append(p)
         w_list.append(w)
         if iterLines == 20000:
+            global final_om
+            global final_weight
+            global final_chi
             final_om.append(om)
             final_weight.append(w)
+            final_chi.append(p)
             iterLines = 0
 #            break
 
-    print final_weight, final_om
-    
     return alpha_list,beta_list,dM_list,Mp_list,om_list,ol_list,p_list
 
 def main(inputfile):
@@ -110,6 +113,32 @@ def main(inputfile):
     # plt.axis([0,n,0.,1.])
     # plt.savefig("plots/ol.pdf")
 if __name__ == "__main__":
+    main("results/Dec6_MCMC_Run_01.txt")
+    main("results/Dec6_MCMC_Run_02.txt")
+    main("results/Dec6_MCMC_Run_03.txt")
+    main("results/Dec6_MCMC_Run_04.txt")
+    main("results/Dec6_MCMC_Run_05.txt")
     main("results/Dec6_MCMC_Run_06.txt")
+    main("results/Dec6_MCMC_Run_07.txt")
+    main("results/Dec6_MCMC_Run_08.txt")
+    main("results/Dec6_MCMC_Run_09.txt")
+    main("results/Dec6_MCMC_Run_10.txt")
+    print final_om, final_weight, final_chi
+    weighted_omega_m_avg = sum([final_om[i]*final_weight[i] for i in range(len(final_om))])
+    total_weight = sum([final_weight[i] for i in range(len(final_om))])
+    print "WEIGHTED OMEGA_M AVG: ", weighted_omega_m_avg/total_weight
+    plt.rcParams.update({'font.size': 18})
+    n, bins, patches = plt.hist(final_om,10,normed=1,facecolor='pink')
+    plt.xlabel(r"$\Omega_m$")
+    plt.ylabel("A.U.")
+    plt.savefig("plots/om_hist.pdf")
+    plt.clf()
+
+    plt.rcParams.update({'font.size': 18})
+    plt.plot(final_om,final_chi,"b*")
+    plt.xlabel(r"$\Omega_m$")
+    plt.ylabel(r"$\chi^2$")
+    #    plt.axis([0,n,0.,1.])
+    plt.savefig("plots/om_chi.pdf")
 #    main("results/Dec6_MCMC_Run_08.txt")
 

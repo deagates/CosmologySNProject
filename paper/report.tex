@@ -32,8 +32,6 @@ For comparison, using the density parameters ($\Omega_m$, $\Omega_{r}$, $\Omega_
 $$E(z)=\sqrt{\Omega_{r}(1+z)^4 + \Omega_m(1+z)^3 + \Omega_k(1+z)^2 + \Omega_{\Lambda}} $$
 $$d_L(z)=\frac{c}{H_0} {\int_0}^z \frac{dz'}{E(z')} $$
 $$\mu = 25 + 5\;\text{log}_{10} \left( \frac{d_L(z)}{\text{Mpc}} \right) $$
- 
-dfd
 \section{III. Methods}
 We perform a likelihood analysis using MCMC methods. Our code can be found online at https://github.com/deagates/CosmologySNProject.
 \par We will adopt the likelihood function described in \cite{sdss}, which is defined to be $$\mathscr{L} = \text{exp}(-\frac{\chi^2}{2}) $$ where$$\chi^2 = (\hat{\mu}-\mu_\text{model})^\dagger C^{-1} (\hat{\mu}-\mu_\text{model}),$$  with C as the covariance matrix, and $\hat{\mu}$ and $\mu_\text{model}$ are calculated using (1) and (2) respectively . For simplicity and comparability with J.T. Nielson et al., we take $\Omega_r$ the radiation density parameter of the universe to be 0, further justified by the fact that the measured radiation density parameter of today is very small, and we assume the universe is flat ($\Omega_k = 0$). This leaves us with the constraint that $\Omega_m + \Omega_{\Lambda} = 1 $. We have five model parameters ($\Omega_m$, $\alpha$, $\beta$, $M'_B$, and $\Delta_M$) that our MCMC varies to try to maximize the likelihood.
@@ -85,6 +83,16 @@ $\Delta_M$ & -2 & 1 \\
  %\centering
  \includegraphics[width=0.5\textwidth]{../plots/mu.pdf}
 \caption{\label{fig:mu}The distribution of distance modulii versus redshift for the SN Ia points used in the analysis from the JLA catalog. The $\mu_\text{model}$ distribution predicted by our best-fit value of $\Omega_l$, $\Omega_m$ is overlaid in blue.}
+\end{figure}
+\begin{figure}
+ %\centering
+ \includegraphics[width=0.5\textwidth]{../plots/om_hist.pdf}
+\caption{\label{fig:omhist}The distribution of final values of $\Omega_M$ from the MCMC.}
+\end{figure}
+\begin{figure}
+ %\centering
+ \includegraphics[width=0.5\textwidth]{../plots/om_chi.pdf}
+\caption{\label{fig:chi2}The final values of $\Omega_M$ from each MCMC iteration versus the final $\chi^2$ values.}
 \end{figure}
 \section{IV. Analysis} 
 \section{V. Discussion}
