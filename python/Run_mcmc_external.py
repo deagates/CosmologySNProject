@@ -9,4 +9,4 @@ single_run_length=10
 NUM_ITER = 3
 ResultsName='results_test2.txt'
 
-SNe.main(NUM_ITER,single_run_length,single_run_length_mini,ResultsName)
+SNe.main(NUM_ITER,single_run_length,ResultsName)
